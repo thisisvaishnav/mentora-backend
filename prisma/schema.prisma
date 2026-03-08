@@ -1,0 +1,63 @@
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+ url      = env("DATABASE_URL")
+}
+
+enum Role {
+ PARENT
+ MENTOR
+}
+
+model User {
+ id        String   @id @default(uuid())
+ email     String   @unique
+ password  String
+ role      Role
+ createdAt DateTime @default(now())
+
+ students  Student[]
+ lessons   Lesson[]
+}
+
+model Student {
+ id       String @id @default(uuid())
+ name     String
+ parentId String
+
+ parent   User @relation(fields: [parentId], references: [id])
+ bookings Booking[]
+}
+
+model Lesson {
+ id          String @id @default(uuid())
+ title       String
+ description String
+ mentorId    String
+
+ mentor   User @relation(fields: [mentorId], references: [id])
+ sessions Session[]
+ bookings Booking[]
+}
+
+model Booking {
+ id        String @id @default(uuid())
+ studentId String
+ lessonId  String
+
+ student Student @relation(fields: [studentId], references: [id])
+ lesson  Lesson  @relation(fields: [lessonId], references: [id])
+}
+
+model Session {
+ id       String @id @default(uuid())
+ lessonId String
+ date     DateTime
+ topic    String
+ summary  String?
+
+ lesson Lesson @relation(fields: [lessonId], references: [id])
+}
